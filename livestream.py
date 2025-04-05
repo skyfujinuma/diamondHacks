@@ -7,7 +7,8 @@ if not cap.isOpened():
     print("Failed to open stream!")
     exit()
 
-print("Press 'q' to quit.")
+frame_count = 0
+print("Enter 'quit' or 'exit' to quit the stream.")
 
 while True:
     ret, frame = cap.read()
@@ -15,13 +16,19 @@ while True:
         print("Stream ended or error.")
         break
 
+    frame_count += 1
+    print(f"Frame: {frame_count}", end="\r")  # prints on the same line
+    
+    if frame_count % 30 == 0:
+        cv2.imwrite(f"frame_{frame_count}.jpg", frame)
+
+    # Show the stream
     cv2.imshow("Live Stream", frame)
 
-    # Wait for 1ms and check for 'q' key to exit
+    # Check for 'q' key to quit from OpenCV window (optional)
     if cv2.waitKey(1) & 0xFF == ord('q'):
         print("Quitting stream...")
         break
 
-# Cleanup
 cap.release()
 cv2.destroyAllWindows()
