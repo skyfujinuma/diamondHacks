@@ -132,8 +132,18 @@ def accessWeather():
 
     if "main" in weather_data:
         temp = weather_data["main"]["temp"]
-        print(f"{city}, {country} --> {temp}°C")
-        return temp
+        humidity = weather_data["main"]["humidity"]
+    if "wind" in weather_data:
+        speed = weather_data["wind"]["speed"]
+
+
+        print(f"{city}, {country} --> {temp}K")
+        print(f"{city}, {country} --> {humidity}g/kg")
+        print(f"{city}, {country} --> {speed}km/h")
+        weather = temp *humidity - speed
+        weather = round(weather)
+        print(weather)
+        return weather
     else:
         print("Weather data not found.")
         return
