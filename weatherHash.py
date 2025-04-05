@@ -107,14 +107,39 @@ cities_data = {
 openWeatherAPIKey = "40485748d0b1c814e3b69687e60fd4f1"
 
 
-def accessWeather():
+def accessLocation():
     cityNo = randInt(1,100)
     cityArray = cities_data[cityNo]
+
     city = cityArray[0]
     stateCode = cityArray[1]
     countryCode = cityArray[2]
+
     location = f"{city},{stateCode},{countryCode}" if stateCode else f"{city},{countryCode}"
-    f"http://api.openweathermap.org/geo/1.0/direct?q={location}&limit=1&appid={openWeatherAPIKey}"
+    url = f"http://api.openweathermap.org/geo/1.0/direct?q={location}&limit=1&appid={openWeatherAPIKey}"
+
+    response = requests.get(url)
+    data = response.json()
+    if data :
+        lat = data[0]["lat"]
+        lon = data[0]["lon"]
+    
+    weather_url = (
+            f"https://api.openweathermap.org/data/3.0/onecall"
+            f"?lat={lat}&lon={lon}&exclude=hourly,daily"
+            f"&appid={openWeatherAPIKey}&units=metric"
+        )
+
+        weather_response = requests.get(weather_url)
+        weather_data = weather_response.json()
+
+    if "current" in weather_data:
+        temp = weather_data["current"]["temp"]
+        humidity = weather_data["current"]["humidity"]
+        dewpoint = weather_data["current"]["dew_point"]
+        windspeed = weather_data["current"]["dew_point"]
+
+
 
 
 
