@@ -1,16 +1,9 @@
 import random
 import requests
+
 cities_data = {
-    1: ["Paris", "", "FR", 1],
-    2: ["Madrid", "", "ES", 1],
-    3: ["Tokyo", "", "JP", 1],
-    4: ["Rome", "", "IT", 1],
-    5: ["Milan", "", "IT", 1],
-    6: ["New York", "NY", "US", 1],
-    7: ["Amsterdam", "", "NL", 1],
-    8: ["Sydney", "", "AU", 1],
-    9: ["Singapore", "", "SG", 1],
-    10: ["Barcelona", "", "ES", 1],
+    1: ["Paris", "", "FR", 1], 2: ["Madrid", "", "ES", 1], 3: ["Tokyo", "", "JP", 1], 4: ["Rome", "", "IT", 1], 5: ["Milan", "", "IT", 1],
+    6: ["New York", "NY", "US", 1], 7: ["Amsterdam", "", "NL", 1], 8: ["Sydney", "", "AU", 1], 9: ["Singapore", "", "SG", 1], 10: ["Barcelona", "", "ES", 1],
     11: ["Taipei", "", "TW", 1],
     12: ["Seoul", "", "KR", 1],
     13: ["London", "", "GB", 1],
@@ -103,44 +96,47 @@ cities_data = {
     100: ["Cairo", "", "EG", 1]
 }
 
-
 openWeatherAPIKey = "40485748d0b1c814e3b69687e60fd4f1"
 
+def accessWeather():
+    city_id = random.randint(1, 100)
+    city_info = cities_data[city_id]
 
-def accessLocation():
-    cityNo = randInt(1,100)
-    cityArray = cities_data[cityNo]
+    city = city_info[0]
+    state = city_info[1]
+    country = city_info[2]
 
-    city = cityArray[0]
-    stateCode = cityArray[1]
-    countryCode = cityArray[2]
+    
+    location = f"{city},{state},{country}" if state else f"{city},{country}"
+    geo_url = f"http://api.openweathermap.org/geo/1.0/direct?q={location}&limit=1&appid={openWeatherAPIKey}"
 
-    location = f"{city},{stateCode},{countryCode}" if stateCode else f"{city},{countryCode}"
-    url = f"http://api.openweathermap.org/geo/1.0/direct?q={location}&limit=1&appid={openWeatherAPIKey}"
+    geo_response = requests.get(geo_url)
+    geo_data = geo_response.json()
 
-    response = requests.get(url)
-    data = response.json()
-    if data :
-        lat = data[0]["lat"]
-        lon = data[0]["lon"]
+    if not geo_data:
+        print(f"Could not find location: {location}")
+        return
+
+    lat = geo_data[0]["lat"]
+    lon = geo_data[0]["lon"]
+
     
     weather_url = (
-            f"https://api.openweathermap.org/data/3.0/onecall"
-            f"?lat={lat}&lon={lon}&exclude=hourly,daily"
-            f"&appid={openWeatherAPIKey}&units=metric"
-        )
+        f"https://api.openweathermap.org/data/3.0/onecall"
+        f"?lat={lat}&lon={lon}&exclude=minutely,hourly,daily,alerts"
+        f"&units=metric&appid={openWeatherAPIKey}"
+    )
 
-        weather_response = requests.get(weather_url)
-        weather_data = weather_response.json()
+    weather_response = requests.get(weather_url)
+    weather_data = weather_response.json()
 
     if "current" in weather_data:
         temp = weather_data["current"]["temp"]
-        humidity = weather_data["current"]["humidity"]
-        dewpoint = weather_data["current"]["dew_point"]
-        windspeed = weather_data["current"]["dew_point"]
-
-
-
+        print(f"{city}, {country} --> {temp}°C")
+        return temp
+    else:
+        print("Weather data not found.")
+        return
 
 
 def toy_hash(input_str):
@@ -151,5 +147,4 @@ def toy_hash(input_str):
     return hex(hash_val)
 
 
-input_str = ""
-print(toy_hash(input_str))
+accessWeather()
