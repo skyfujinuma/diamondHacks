@@ -18,12 +18,13 @@ while True:
 
     frame_count += 1
     print(f"Frame: {frame_count}", end="\r")  # prints on the same line
-    
+
     if frame_count % 30 == 0:
-        cv2.imwrite(f"frame_{frame_count}.jpg", frame)
+        processed_frame = frame
+        cv2.imshow("Live Stream", processed_frame)
+
 
     # Show the stream
-    cv2.imshow("Live Stream", frame)
 
     # Check for 'q' key to quit from OpenCV window (optional)
     if cv2.waitKey(1) & 0xFF == ord('q'):
