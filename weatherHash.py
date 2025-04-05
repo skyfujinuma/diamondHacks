@@ -96,7 +96,7 @@ cities_data = {
     100: ["Cairo", "", "EG", 1]
 }
 
-openWeatherAPIKey = "40485748d0b1c814e3b69687e60fd4f1"
+openWeatherAPIKey = "787eb916eeb102320bd5dc58ef8e88bf"
 
 def accessWeather():
     city_id = random.randint(1, 100)
@@ -112,39 +112,31 @@ def accessWeather():
 
     geo_response = requests.get(geo_url)
     geo_data = geo_response.json()
+    
 
-    if not geo_data:
-        print(f"Could not find location: {location}")
+# Check if the response is a list and not empty
+    if isinstance(geo_data, list) and geo_data:
+        lat = geo_data[0]["lat"]
+        lon = geo_data[0]["lon"]
+    else:
+        print(f"Could not find location or invalid response for: {location}")
         return
-
-    lat = geo_data[0]["lat"]
-    lon = geo_data[0]["lon"]
 
     
     weather_url = (
-        f"https://api.openweathermap.org/data/3.0/onecall"
-        f"?lat={lat}&lon={lon}&exclude=minutely,hourly,daily,alerts"
-        f"&units=metric&appid={openWeatherAPIKey}"
+        f"https://api.openweathermap.org/data/2.5/weather?lat={lat}&lon={lon}&appid={openWeatherAPIKey}"
     )
 
     weather_response = requests.get(weather_url)
     weather_data = weather_response.json()
 
-    if "current" in weather_data:
-        temp = weather_data["current"]["temp"]
+    if "main" in weather_data:
+        temp = weather_data["main"]["temp"]
         print(f"{city}, {country} --> {temp}°C")
         return temp
     else:
         print("Weather data not found.")
         return
-
-
-def toy_hash(input_str):
-    hash_val = 0xABCDEF  # random starting value
-    for ch in input_str:
-        hash_val ^= (ord(ch) * 16777619)
-        hash_val = (hash_val << 5 | hash_val >> 27) & 0xFFFFFFFF  # circular shift
-    return hex(hash_val)
 
 
 accessWeather()
