@@ -149,4 +149,3 @@ def accessWeather():
         return
 
 
-accessWeather()
