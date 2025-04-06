@@ -148,4 +148,3 @@ def accessWeather():
         print("Weather data not found.")
         return
 
-
