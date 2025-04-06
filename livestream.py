@@ -7,6 +7,7 @@ import random
 import requests
 from datetime import datetime
 
+
 cities_data = {
     1: ["Paris", "", "FR", 1], 2: ["Madrid", "", "ES", 1], 3: ["Tokyo", "", "JP", 1], 4: ["Rome", "", "IT", 1], 5: ["Milan", "", "IT", 1],
     6: ["New York", "NY", "US", 1], 7: ["Amsterdam", "", "NL", 1], 8: ["Sydney", "", "AU", 1], 9: ["Singapore", "", "SG", 1], 10: ["Barcelona", "", "ES", 1],
@@ -160,7 +161,7 @@ def get_quadrant_string(data):
         for q in data.values()
     )
 
-
+# hash code generator
 def generate_hash(password, quadrant_data, weather, time):
     quad_str = get_quadrant_string(quadrant_data)
     horse = str(weather)
