@@ -105,6 +105,7 @@ cities_data = {
 
 openWeatherAPIKey = "787eb916eeb102320bd5dc58ef8e88bf"
 
+# Get current weather details from a random city 
 def accessWeather():
     city_id = random.randint(1, 100)
     city_info = cities_data[city_id]
@@ -149,25 +150,26 @@ def accessWeather():
         print("Weather data not found.")
         return
 
+# Get current time as a string
 def get_current_time():
-    # Get current time
     current_time = datetime.now().strftime("%H:%M:%S")
     return current_time
 
-# --- GUI Code ---
+# converts quadrant dictionary data to a string usable by the hash generator
 def get_quadrant_string(data):
     return ''.join(
         f"{q['count']}_{q['avg'][0]:.2f}_{q['avg'][1]:.2f}" 
         for q in data.values()
     )
 
-# hash code generator
+# generates hash code based on four parameters including the original password
 def generate_hash(password, quadrant_data, weather, time):
     quad_str = get_quadrant_string(quadrant_data)
     horse = str(weather)
     combined = password + quad_str + horse + time
     return hashlib.sha256(combined.encode()).hexdigest()
 
+# GUI Code
 class HashGeneratorApp(QWidget):
     def __init__(self, quadrant_data):
         super().__init__()
@@ -225,7 +227,7 @@ class HashGeneratorApp(QWidget):
         ])
         self.result_label.setText(result_text)
 
-# --- Stream and Tracking Code ---
+# Stream and box tracking code
 stream_url = "https://edge03.nginx.hdontap.com/hosb1/scripps_kelp_cam-ptz.stream/chunklist_w97654465.m3u8"
 cap = cv2.VideoCapture(stream_url)
 
@@ -237,11 +239,13 @@ fgbg = cv2.createBackgroundSubtractorMOG2()
 frame_count = 0
 print("Press 'q' to quit.")
 
+# First column to cut out from stream (kelp 1)
 column_width = 150
 frame_center_x = 870
 left_x = frame_center_x - (column_width // 2)
 right_x = frame_center_x + (column_width // 2)
 
+# Second column to cut out from stream (kelp 2)
 second_column_width = 150
 second_frame_center_x = 610
 second_left_x = second_frame_center_x - column_width - (second_column_width // 2)
@@ -325,10 +329,12 @@ while True:
 
     key = cv2.waitKey(1) & 0xFF
 
+    # Quits the stream after user inputs 'q'
     if key == ord('q'):
         print("Quitting stream...")
         break
 
+    # Launches the Hash Code Generator GUI after user inputs 'p'
     if key == ord('p'):
         print("Launching password creation GUI...")
 
