@@ -243,10 +243,15 @@ class HashGeneratorApp(QWidget):
         self.result_label.setText(result_text)
 
     def get_passwords(self):
+<<<<<<< HEAD
         time = get_current_time()
         weather = accessWeather()
         """Simple method to return both passwords"""
         return self.user_password, self.user_hashed_password, self.quadrant_data, time, weather
+=======
+        """Simple method to return both passwords"""
+        return self.user_password, self.user_hashed_password
+>>>>>>> 2329da5861cb54141d90c788fb27ba1ebba0962c
 
 
 # --- Stream and Tracking Code ---
@@ -370,7 +375,11 @@ while True:
 
         app.exec_()
 # user submitted password and its corresponding hash_pass stored to be put into database
+<<<<<<< HEAD
 user_password, hashed_password, quadrant_data, current_time, current_weather = window.get_passwords()
+=======
+user_password, hashed_password = window.get_passwords()
+>>>>>>> 2329da5861cb54141d90c788fb27ba1ebba0962c
 
 cap.release()
 cv2.destroyAllWindows()
@@ -393,23 +402,30 @@ collection = db['passData']
 def store_password_entry():
     password = user_password
     hashed = hashed_password
+<<<<<<< HEAD
     q_data = quadrant_data
     time = current_time
     weather = current_weather
+=======
+>>>>>>> 2329da5861cb54141d90c788fb27ba1ebba0962c
     
     entry = {
         "username": username,
         "original_password": password,  # Only for demo! Normally, don't store this!
+<<<<<<< HEAD
         "Components:"
         "Quadrant Data": q_data,
         "Time": time,
         "Weather": weather,
+=======
+>>>>>>> 2329da5861cb54141d90c788fb27ba1ebba0962c
         "hashed_password": hashed
     }
 
     result = collection.insert_one(entry)
     print(f"Password for {username} stored with ID: {result.inserted_id}")
 
+<<<<<<< HEAD
     
 def recreate_hash(username):
     
@@ -445,8 +461,14 @@ def recreate_hash(username):
         "recreated_hash": recreated_hash,
         "match": stored_hash == recreated_hash
     }
+=======
+# Example usage
+>>>>>>> 2329da5861cb54141d90c788fb27ba1ebba0962c
 if __name__ == "__main__":
     username = input("Enter a username: ") # too change
     print(hashed_password)#Delete
     store_password_entry()
+<<<<<<< HEAD
     recreate_hash(username)
+=======
+>>>>>>> 2329da5861cb54141d90c788fb27ba1ebba0962c
