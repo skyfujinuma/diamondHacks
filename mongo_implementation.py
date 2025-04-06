@@ -1,12 +1,17 @@
-import cv2
 import hashlib
+import random
+from pymongo.mongo_client import MongoClient
+from pymongo.server_api import ServerApi
+import cv2
 import sys
 from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QLabel, QLineEdit, QPushButton, QHBoxLayout, QFrame
 from PyQt5.QtCore import Qt
-import random
 import requests
 from datetime import datetime
 
+
+#APIkey to get weather data for certain cities
+openWeatherAPIKey = "787eb916eeb102320bd5dc58ef8e88bf"
 
 cities_data = {
     1: ["Paris", "", "FR", 1], 2: ["Madrid", "", "ES", 1], 3: ["Tokyo", "", "JP", 1], 4: ["Rome", "", "IT", 1], 5: ["Milan", "", "IT", 1],
@@ -103,9 +108,7 @@ cities_data = {
     100: ["Cairo", "", "EG", 1]
 }
 
-openWeatherAPIKey = "787eb916eeb102320bd5dc58ef8e88bf"
-
-# Get current weather details from a random city 
+#Gets the weather of a randomly selected city in the cities data dictionary using the API key
 def accessWeather():
     city_id = random.randint(1, 100)
     city_info = cities_data[city_id]
@@ -150,32 +153,37 @@ def accessWeather():
         print("Weather data not found.")
         return
 
-# Get current time as a string
+#Gets the current time of the users request 
 def get_current_time():
+    # Get current time
     current_time = datetime.now().strftime("%H:%M:%S")
     return current_time
 
-# converts quadrant dictionary data to a string usable by the hash generator
+# --- GUI Code ---
 def get_quadrant_string(data):
     return ''.join(
         f"{q['count']}_{q['avg'][0]:.2f}_{q['avg'][1]:.2f}" 
         for q in data.values()
     )
 
-# generates hash code based on four parameters including the original password
+#Generates the end hash based on time, weather, and fish data to be stored later
 def generate_hash(password, quadrant_data, weather, time):
     quad_str = get_quadrant_string(quadrant_data)
     horse = str(weather)
     combined = password + quad_str + horse + time
     return hashlib.sha256(combined.encode()).hexdigest()
 
-# GUI Code
+#Class formats the data gather by the stream of fish in the Birtch Aquarium
 class HashGeneratorApp(QWidget):
     def __init__(self, quadrant_data):
         super().__init__()
         self.quadrant_data = quadrant_data
         self.setWindowTitle('Password Creation - Fish Tracker')
         self.setGeometry(100, 100, 500, 400)
+
+        # Instance variables to store password and hash
+        self.user_password = None
+        self.user_hashed_password = None
         
         # Layout setup
         layout = QVBoxLayout()
@@ -205,29 +213,41 @@ class HashGeneratorApp(QWidget):
         if not password:
             self.result_label.setText("Please enter a password.")
             return
+
+        # Store the user's password
+        self.user_password = password
         
         time = get_current_time()
         temp, humidity, speed, city, country, weather = accessWeather()
 
         hash_result = generate_hash(password, self.quadrant_data, weather, time)
+
+        # Store the hashed password
+        self.user_hashed_password = hash_result 
+
         result_text = "\n".join([
             f"Q1 - Count: {self.quadrant_data['Q1']['count']}, Avg Pos: {self.quadrant_data['Q1']['avg']}",
             f"Q2 - Count: {self.quadrant_data['Q2']['count']}, Avg Pos: {self.quadrant_data['Q2']['avg']}",
             f"Q3 - Count: {self.quadrant_data['Q3']['count']}, Avg Pos: {self.quadrant_data['Q3']['avg']}",
             f"Q4 - Count: {self.quadrant_data['Q4']['count']}, Avg Pos: {self.quadrant_data['Q4']['avg']}",
             f"---------",
-            f"Weather in: " + city + ", " + country,
-            f"Temperature: " + str(temp) + "K",
-            f"Humidity: " + str(humidity) + "g/kg",
-            f"Wind: " + str(speed) + "km/h",
-            f"W-Value: " + str(weather),
+            f"Weather in: {city}, {country}",
+            f"Temperature: {temp}K",
+            f"Humidity: {humidity}g/kg",
+            f"Wind: {speed}km/h",
+            f"W-Value: {weather}",
             f"---------",
-            f"Time: " + time,
+            f"Time: {time}",
             f"\nGenerated Hash:\n{hash_result}"
         ])
         self.result_label.setText(result_text)
 
-# Stream and box tracking code
+    def get_passwords(self):
+        """Simple method to return both passwords"""
+        return self.user_password, self.user_hashed_password
+
+
+# --- Stream and Tracking Code ---
 stream_url = "https://edge03.nginx.hdontap.com/hosb1/scripps_kelp_cam-ptz.stream/chunklist_w97654465.m3u8"
 cap = cv2.VideoCapture(stream_url)
 
@@ -239,13 +259,11 @@ fgbg = cv2.createBackgroundSubtractorMOG2()
 frame_count = 0
 print("Press 'q' to quit.")
 
-# First column to cut out from stream (kelp 1)
 column_width = 150
 frame_center_x = 870
 left_x = frame_center_x - (column_width // 2)
 right_x = frame_center_x + (column_width // 2)
 
-# Second column to cut out from stream (kelp 2)
 second_column_width = 150
 second_frame_center_x = 610
 second_left_x = second_frame_center_x - column_width - (second_column_width // 2)
@@ -329,12 +347,10 @@ while True:
 
     key = cv2.waitKey(1) & 0xFF
 
-    # Quits the stream after user inputs 'q'
     if key == ord('q'):
         print("Quitting stream...")
         break
 
-    # Launches the Hash Code Generator GUI after user inputs 'p'
     if key == ord('p'):
         print("Launching password creation GUI...")
 
@@ -350,7 +366,43 @@ while True:
         window.show()
 
 
-        sys.exit(app.exec_())
+        app.exec_()
+# user submitted password and its corresponding hash_pass stored to be put into database
+user_password, hashed_password = window.get_passwords()
 
 cap.release()
 cv2.destroyAllWindows()
+
+# 1. MongoDB Atlas connection
+uri = "mongodb+srv://ninjagladiator504:n1nja6lad1at0r@diamondhacks.weagrtk.mongodb.net/?appName=DiamondHacks"
+client = MongoClient(uri, server_api=ServerApi('1'))
+
+try:
+    client.admin.command('ping')
+    print("Connected to MongoDB!")
+except Exception as e:
+    print("Connection failed:", e)
+
+# 2. Choose database and collection
+db = client['DiamondHackPasswords']
+collection = db['passData']
+
+# 3. Add password to MongoDB
+def store_password_entry():
+    password = user_password
+    hashed = hashed_password
+    
+    entry = {
+        "username": username,
+        "original_password": password,  # Only for demo! Normally, don't store this!
+        "hashed_password": hashed
+    }
+
+    result = collection.insert_one(entry)
+    print(f"Password for {username} stored with ID: {result.inserted_id}")
+
+# Example usage
+if __name__ == "__main__":
+    username = input("Enter a username: ") # too change
+    print(hashed_password)#Delete
+    store_password_entry()
