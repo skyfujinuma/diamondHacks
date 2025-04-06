@@ -96,7 +96,7 @@ cities_data = {
     100: ["Cairo", "", "EG", 1]
 }
 
-openWeatherAPIKey = "40485748d0b1c814e3b69687e60fd4f1"
+openWeatherAPIKey = "40485748d0b1c814e3b69687e60fd4f1" #Our API Key
 
 def accessWeather():
     city_id = random.randint(1, 100)
