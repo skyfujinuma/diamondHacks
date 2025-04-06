@@ -146,10 +146,11 @@ def accessWeather():
         print(f"{city}, {country} --> {temp}K")
         print(f"{city}, {country} --> {humidity}g/kg")
         print(f"{city}, {country} --> {speed}km/h")
-        weather = temp *humidity - speed
+        weather = temp * humidity - speed
         weather = round(weather)
         print(weather)
-        return weather
+
+        return temp, humidity, speed, city, country, weather
     else:
         print("Weather data not found.")
         return
@@ -167,9 +168,10 @@ def get_quadrant_string(data):
     )
 
 
-def generate_hash(password, quadrant_data, temp, time):
+def generate_hash(password, quadrant_data, weather, time):
     quad_str = get_quadrant_string(quadrant_data)
-    combined = password + quad_str + temp + time
+    horse = str(weather)
+    combined = password + quad_str + horse + time
     return hashlib.sha256(combined.encode()).hexdigest()
 
 class HashGeneratorApp(QWidget):
@@ -209,14 +211,21 @@ class HashGeneratorApp(QWidget):
             return
         
         time = get_current_time()
-        temp = str(accessWeather())
-        hash_result = generate_hash(password, self.quadrant_data, temp, time)
+        temp, humidity, speed, city, country, weather = accessWeather()
+
+        hash_result = generate_hash(password, self.quadrant_data, weather, time)
         result_text = "\n".join([
             f"Q1 - Count: {self.quadrant_data['Q1']['count']}, Avg Pos: {self.quadrant_data['Q1']['avg']}",
             f"Q2 - Count: {self.quadrant_data['Q2']['count']}, Avg Pos: {self.quadrant_data['Q2']['avg']}",
             f"Q3 - Count: {self.quadrant_data['Q3']['count']}, Avg Pos: {self.quadrant_data['Q3']['avg']}",
             f"Q4 - Count: {self.quadrant_data['Q4']['count']}, Avg Pos: {self.quadrant_data['Q4']['avg']}",
-            f"Weather Value: " + temp,
+            f"---------",
+            f"Weather in: " + city + ", " + country,
+            f"Temperature: " + str(temp) + "K",
+            f"Humidity: " + str(humidity) + "g/kg",
+            f"Wind: " + str(speed) + "km/h",
+            f"W-Value: " + str(weather),
+            f"---------",
             f"Time: " + time,
             f"\nGenerated Hash:\n{hash_result}"
         ])
