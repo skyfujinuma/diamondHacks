@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-<title>Salt Hash</title>
-<style>
+  <meta charset="UTF-8">
+  <title>Salt Hash</title>
+  <style>
     body {
       font-family: Helvetica, monospace;
       max-width: 600px;
@@ -12,24 +12,25 @@
       background-color: #f7f7f7;
       color: #333;
     }
-    
+
     h1 {
       text-align: center;
     }
-    #RandomH1{
-        text-align: center;
-        position: absolute;
-        bottom:500px;
+
+    #RandomH1 {
+      text-align: center;
+      position: absolute;
+      bottom: 500px;
     }
 
-    #WebTitle{
-        text-align: left;
-        font-size: 60px;
-        position: absolute;
-        left:25px;
-        top:0px;
+    #WebTitle {
+      text-align: left;
+      font-size: 60px;
+      position: absolute;
+      left: 25px;
+      top: 0px;
     }
-    
+
     input[type="text"] {
       width: 100%;
       padding: 10px;
@@ -55,28 +56,20 @@
       border-radius: 4px;
       box-shadow: 0 0 5px rgba(0,0,0,0.1);
     }
-
-    
-
-    
   </style>
 </head>
 <body>
-    <h1 id = "WebTitle">Salt Hash</h1>
-  <h1 id = "RandomH1">Hash your passcode</h1>
+  <h1 id="WebTitle">Salt Hash</h1>
+  <h1 id="RandomH1">Hash your passcode</h1>
 
-  <input type="text" id="userInput" placeholder="Enter your passcode here...">
-  <button onclick="showOutput()">Submit</button>
+  <form method="POST">
+    <input type="text" name="userInput" placeholder="Enter your passcode here..." required>
+    <button type="submit">Submit</button>
+  </form>
 
-  <div id="output"></div>
-
-  <script>
-    function showOutput() {
-      const input = document.getElementById("userInput").value;
-      document.getElementById("output").innerText = "You entered: " + input;
-    }
-  </script>
-
+  {% if output %}
+    <div id="output">{{ output }}</div>
+  {% endif %}
 
 </body>
 </html>
