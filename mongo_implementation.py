@@ -243,8 +243,15 @@ class HashGeneratorApp(QWidget):
         self.result_label.setText(result_text)
 
     def get_passwords(self):
+<<<<<<< HEAD
+        time = get_current_time()
+        weather = accessWeather()
+        """Simple method to return both passwords"""
+        return self.user_password, self.user_hashed_password, self.quadrant_data, time, weather
+=======
         """Simple method to return both passwords"""
         return self.user_password, self.user_hashed_password
+>>>>>>> 2329da5861cb54141d90c788fb27ba1ebba0962c
 
 
 # --- Stream and Tracking Code ---
@@ -368,7 +375,11 @@ while True:
 
         app.exec_()
 # user submitted password and its corresponding hash_pass stored to be put into database
+<<<<<<< HEAD
+user_password, hashed_password, quadrant_data, current_time, current_weather = window.get_passwords()
+=======
 user_password, hashed_password = window.get_passwords()
+>>>>>>> 2329da5861cb54141d90c788fb27ba1ebba0962c
 
 cap.release()
 cv2.destroyAllWindows()
@@ -391,18 +402,73 @@ collection = db['passData']
 def store_password_entry():
     password = user_password
     hashed = hashed_password
+<<<<<<< HEAD
+    q_data = quadrant_data
+    time = current_time
+    weather = current_weather
+=======
+>>>>>>> 2329da5861cb54141d90c788fb27ba1ebba0962c
     
     entry = {
         "username": username,
         "original_password": password,  # Only for demo! Normally, don't store this!
+<<<<<<< HEAD
+        "Components:"
+        "Quadrant Data": q_data,
+        "Time": time,
+        "Weather": weather,
+=======
+>>>>>>> 2329da5861cb54141d90c788fb27ba1ebba0962c
         "hashed_password": hashed
     }
 
     result = collection.insert_one(entry)
     print(f"Password for {username} stored with ID: {result.inserted_id}")
 
+<<<<<<< HEAD
+    
+def recreate_hash(username):
+    
+    """Retrieve stored data and recreate the hash for verification"""
+    # 1. Fetch the user's data from MongoDB
+    user_data = collection.find_one({"username": username})
+    
+    if not user_data:
+        print(f"No user found with username: {username}")
+        return None
+    
+    # 2. Extract all required components
+    try:
+        original_password = user_data["original_password"]
+        stored_hash = user_data["hashed_password"]
+        salt = user_data["salt"]
+        quadrant_data = user_data["quadrant_data"]
+        time = user_data["timestamp"].strftime("%H:%M:%S")  # Convert datetime to time string
+        weather = user_data["weather"]
+    except KeyError as e:
+        print(f"Missing required field in database: {e}")
+        return None
+    
+    # 3. Reconstruct the hash using the original method
+    quad_str = get_quadrant_string(quadrant_data)
+    horse = str(weather)
+    combined = original_password + salt + quad_str + horse + time
+    recreated_hash = hashlib.sha256(combined.encode()).hexdigest()
+    
+    # 4. Return both for comparison
+    return {
+        "stored_hash": stored_hash,
+        "recreated_hash": recreated_hash,
+        "match": stored_hash == recreated_hash
+    }
+=======
 # Example usage
+>>>>>>> 2329da5861cb54141d90c788fb27ba1ebba0962c
 if __name__ == "__main__":
     username = input("Enter a username: ") # too change
     print(hashed_password)#Delete
     store_password_entry()
+<<<<<<< HEAD
+    recreate_hash(username)
+=======
+>>>>>>> 2329da5861cb54141d90c788fb27ba1ebba0962c

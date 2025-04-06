@@ -1,12 +1,12 @@
 import cv2
 import hashlib
 import sys
+import string
 from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QLabel, QLineEdit, QPushButton, QHBoxLayout, QFrame
 from PyQt5.QtCore import Qt
 import random
 import requests
 from datetime import datetime
-
 
 cities_data = {
     1: ["Paris", "", "FR", 1], 2: ["Madrid", "", "ES", 1], 3: ["Tokyo", "", "JP", 1], 4: ["Rome", "", "IT", 1], 5: ["Milan", "", "IT", 1],
@@ -105,7 +105,6 @@ cities_data = {
 
 openWeatherAPIKey = "787eb916eeb102320bd5dc58ef8e88bf"
 
-# Get current weather details from a random city 
 def accessWeather():
     city_id = random.randint(1, 100)
     city_info = cities_data[city_id]
@@ -150,26 +149,33 @@ def accessWeather():
         print("Weather data not found.")
         return
 
-# Get current time as a string
 def get_current_time():
+    # Get current time
     current_time = datetime.now().strftime("%H:%M:%S")
     return current_time
 
-# converts quadrant dictionary data to a string usable by the hash generator
+# --- GUI Code ---
 def get_quadrant_string(data):
     return ''.join(
         f"{q['count']}_{q['avg'][0]:.2f}_{q['avg'][1]:.2f}" 
         for q in data.values()
     )
 
-# generates hash code based on four parameters including the original password
+
 def generate_hash(password, quadrant_data, weather, time):
+    # Generate a random salt (32 bytes = 64 hex characters)
+    salt = ''.join(random.choices(string.ascii_letters + string.digits, k=16))
+    
     quad_str = get_quadrant_string(quadrant_data)
     horse = str(weather)
-    combined = password + quad_str + horse + time
-    return hashlib.sha256(combined.encode()).hexdigest()
+    combined = password + salt + quad_str + horse + time
+    
+    # Return both the hash AND the salt
+    return {
+        'hash': hashlib.sha256(combined.encode()).hexdigest(),
+        'salt': salt
+    }
 
-# GUI Code
 class HashGeneratorApp(QWidget):
     def __init__(self, quadrant_data):
         super().__init__()
@@ -210,6 +216,10 @@ class HashGeneratorApp(QWidget):
         temp, humidity, speed, city, country, weather = accessWeather()
 
         hash_result = generate_hash(password, self.quadrant_data, weather, time)
+        
+        self.user_password = password
+        self.user_hashed_password = hash_result['hash']
+        self.salt = hash_result['salt']  # Store the salt too
         result_text = "\n".join([
             f"Q1 - Count: {self.quadrant_data['Q1']['count']}, Avg Pos: {self.quadrant_data['Q1']['avg']}",
             f"Q2 - Count: {self.quadrant_data['Q2']['count']}, Avg Pos: {self.quadrant_data['Q2']['avg']}",
@@ -227,7 +237,7 @@ class HashGeneratorApp(QWidget):
         ])
         self.result_label.setText(result_text)
 
-# Stream and box tracking code
+# --- Stream and Tracking Code ---
 stream_url = "https://edge03.nginx.hdontap.com/hosb1/scripps_kelp_cam-ptz.stream/chunklist_w97654465.m3u8"
 cap = cv2.VideoCapture(stream_url)
 
@@ -239,13 +249,11 @@ fgbg = cv2.createBackgroundSubtractorMOG2()
 frame_count = 0
 print("Press 'q' to quit.")
 
-# First column to cut out from stream (kelp 1)
 column_width = 150
 frame_center_x = 870
 left_x = frame_center_x - (column_width // 2)
 right_x = frame_center_x + (column_width // 2)
 
-# Second column to cut out from stream (kelp 2)
 second_column_width = 150
 second_frame_center_x = 610
 second_left_x = second_frame_center_x - column_width - (second_column_width // 2)
@@ -329,12 +337,10 @@ while True:
 
     key = cv2.waitKey(1) & 0xFF
 
-    # Quits the stream after user inputs 'q'
     if key == ord('q'):
         print("Quitting stream...")
         break
 
-    # Launches the Hash Code Generator GUI after user inputs 'p'
     if key == ord('p'):
         print("Launching password creation GUI...")
 
