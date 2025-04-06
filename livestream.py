@@ -120,7 +120,7 @@ def accessWeather():
     geo_data = geo_response.json()
     
 
-# Check if the response is a list and not empty
+    # Check if the response is a list and not empty
     if isinstance(geo_data, list) and geo_data:
         lat = geo_data[0]["lat"]
         lon = geo_data[0]["lon"]
@@ -141,15 +141,8 @@ def accessWeather():
         humidity = weather_data["main"]["humidity"]
     if "wind" in weather_data:
         speed = weather_data["wind"]["speed"]
-
-
-        print(f"{city}, {country} --> {temp}K")
-        print(f"{city}, {country} --> {humidity}g/kg")
-        print(f"{city}, {country} --> {speed}km/h")
         weather = temp * humidity - speed
         weather = round(weather)
-        print(weather)
-
         return temp, humidity, speed, city, country, weather
     else:
         print("Weather data not found.")
